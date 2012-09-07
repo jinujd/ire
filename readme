@@ -1,0 +1,33 @@
+This is the source code for the sms app named @ire published on txtweb platofrom .
+Run updater.php before first running of the app.It creates all necessary files
+Files included
+1)index.php
+     This file is used to show the home page,main menu and associated links for the text site
+2)preprocessor.php
+     This file is used to preprocess the user request.Flags and parameters for the app engine is set inside this file
+3)engine.php
+     This is the app engine.All processing happens here.
+4)getStationDetails.php
+    Returns the details of railway stations  from the station name or code.The station name or code should be passed as the get parameter named station_details.If exact station name/code is found,it returns the details for the station in the following format
+	stationCode1~stationName1~divisionName1~zoneName1~stationCode2~stationName2~divisionName2~zoneName2~....
+	If exact station name is not found ,it returns a list of similar stations.By default the number of stations in the list will be 5 
+	Two additional get parameters start and limit are used to control the number of stations in the list.By default start = 0,limit =5
+    List will contain stations from <start> th similar station to <limit> th similar station
+5)stationCodes.php
+    Stores the list of station codes as an array(<station name> => <station code>,<station name> => <station code>,...)	
+6)stationNames.php	
+    Stores the list of station codes as an array(<station code> => <station name>,<station code> => <station name>,...)	
+7)updater.php
+	Updates all station information,referring to files stationCodes.php,stationNames.php	and the website http://www.trainenquiry.com
+    This ensure that local names of some stations are included.Some names that are not there in the website will be fetched from the two files and vice versa.Thus we get 
+     almost a complete list of stations
+     After running this file , a directory named stations will be created.In that directory there will be directories like stationsa,stationsb...Each of these directories store details of stations starting with the ending alphabet of the directory name	 
+	 Inside each of these directories,there will be two files.
+	 i)stFromName.php
+	     This file stores the information about stations whose name starts with the ending alphabet of directory name ,as an array 
+		 array(<station name> => array(<station code>,<division>,<zone>) ,....)
+	ii)stFromCode.php
+	     This file stores the information about stations whose station  code starts with the ending alphabet of directory name ,as an array 
+		 array(<station code> => array(<station name>,<division>,<zone>) ,....)
+		 Thus searching will be limited to any one of this directories and files instead of the entire list of stations,which enhances the speed of the application
+	
