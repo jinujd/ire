@@ -536,9 +536,9 @@ class smsApp //application
                         $str3                 = 'Journey ends here';
                         $str4                 = '';
                         $dateArr              = self::getParam( 'status_date' );
-                        $dateDep              = '';
-                        $eArDt                = '';
-                        $eDpDt                = '';
+                        $dateDep              = '';//departure date
+                        $eArDt                = '';//expected arrival date
+                        $eDpDt                = '';//expected departure date
                         $eDpDtO               = '';
                         $data[ 'expArrDate' ] = trim( str_replace( '(Expected)', '', $data[ 'expArrDate' ] ) );
                         $data[ 'expDepDate' ] = trim( str_replace( '(Expected)', '', $data[ 'expDepDate' ] ) );
@@ -614,7 +614,7 @@ class smsApp //application
                 $data = self::$data;
                 $i    = 1;
                 if ( sizeof( $data ) > 1 ) {
-                    $pCnt = $data[ 'passengersCnt' ];
+                    $pCnt = $data[ 'passengersCnt' ];//number of passengers
                     if ( isset( $params[ 'all_details' ] ) ) {
                         $str = "PNR:" . $pnr . "<br />" . $data[ 'trainName' ] . '(' . $data[ 'trainNo' ] . ')' . "<br />" . $data[ 'from' ] . "-" . $data[ 'to' ] . " on " . $data[ 'boardingDate' ];
                         $str = $str . "<br />Passenger)-Booking Status(Coach no.,Berth no.,Quota)-Current Status(Coach no.,Berth no.)";
@@ -648,13 +648,17 @@ class smsApp //application
         } //isset( $flags[ 'pnr' ] )
         else if ( isset( $flags[ 'fare' ] ) ) { //fare enquiry
             $trNo         = self::getParam( "fare_tr_no" );
+			/*Block  A starts
+			   This block is used to make the order of appearence of inputs unimportant.ie 2a child,child 2a will result in same output
+			*/
+			
             $dParams      = array(
                  'fare_class' => false,
                 'fare_age' => false,
                 'fare_conc' => false 
             );
             $flag         = $j = 0;
-            $keysToIgNore = array( );
+            $keysToIgNore = array( );/*array storing which keys of the  array dParams are to be ignored.ex:when a valid class code is identified,then 'fare_class' will be ignored in further checks,as it is valid*/
             foreach ( $dParams as $param_ => &$val_ ) {
                 $ky = false;
                 if ( ( $dP = self::getParam( $param_ ) ) ) {
@@ -689,6 +693,8 @@ class smsApp //application
                     $dParams[ $ky ] ? self::setParam( $ky, $val_ ) : self::setParam( $ky, false );
                 } //$dParams as $ky => &$val_
             } //$flag
+			
+			/*Block A ends*/
             if ( $trNo ) {
                 if ( self::isValidTrNo( $trNo ) ) {
                     if ( ( $from = self::getParam( 'fare_st_from' ) ) ) {
@@ -741,7 +747,7 @@ class smsApp //application
                                     $i = 8;
                                     
                                     $str = $from[ 0 ] . "-" . $to[ 0 ] . " on " . $data[ 2 ] . " in " . strtolower( $data[ 7 ] ) . " class for  ";
-                                    if ( !isset( $params[ 'all_details' ] ) ) {
+                                    if ( !isset( $params[ 'all_details' ] ) ) {//all details are not shown
                                         $str     = $data[ 1 ] . " " . $str . $age;
                                         $str     = $conc != 'ZZZZZZ' ? $str . ' with concession ' . $conc : $str;
                                         $details = '';
@@ -844,8 +850,8 @@ class smsApp //application
                 $quota        = self::getParam( 'seat_quota' );
                 $i            = 0;
                 $flag         = false;
-                $classIsValid = false;
-                $quotaIsValid = false;
+                $classIsValid = false;//true if classcode sent is valid
+                $quotaIsValid = false;//true if quota sent is valid
                 $paramsA      = array(
                      $class,
                     $quota 
@@ -878,7 +884,7 @@ class smsApp //application
                     $i++;
                 } //$i < 2
                 if ( $trNo ) {
-                    if ( self::isValidTrNo( $trNo ) ) {
+                    if ( self::isValidTrNo( $trNo ) ) {//train number is valid
                         if ( !$class ) {
                             $class        = 'SL';
                             $classIsValid = true;
@@ -1201,8 +1207,8 @@ function extract_data( $detailArr ) //extracts required  data from the array 'de
                 }
             } //isset( $flags[ 'status' ] )
             else if ( isset( $flags[ 'fare' ] ) ) { //extracting fare data
-                $detail = strip_tags( $detail );
-                $detail = preg_replace( "/([\n\r\t]+)|&nbsp;/", "~", $detail );
+                $detail = strip_tags( $detail );//remove tags
+                $detail = preg_replace( "/([\n\r\t]+)|&nbsp;/", "~", $detail );//replace all whitespace characters with ~
                 if ( !strpos( $detail, 'Sorry, This particular service is unavailable at this time!!!' ) ) {
                     if ( !strpos( $detail, 'Facility Not Avbl due to Network Connectivity' ) ) {
                         if ( !( $pos1 = strpos( $detail, 'Following ERROR was encountered in your Query Processing' ) ) ) {
@@ -1210,17 +1216,16 @@ function extract_data( $detailArr ) //extracts required  data from the array 'de
                                 if ( strpos( $detail, 'SORRY !!! This is not a validClass For the Given Train' ) == false ) {
                                     $pos1    = strpos( $detail, 'Destination Station~' );
                                     $pos2    = strpos( $detail, 'No. of Queries' );
-                                    //echo $detail;
-                                    $detail  = substr( $detail, $pos1, $pos2 - $pos1 );
+                                    $detail  = substr( $detail, $pos1, $pos2 - $pos1 );//extract the needed portion
                                     $detail  = str_replace( array(
                                          '~Train Type~Distance (kms)',
                                         'Destination Station~',
                                         '~Fare/Charges~Class -- ',
                                         'Concession Code~' 
                                     ), '', $detail );
-                                    $detail  = preg_replace( "/([~]*\s*[~]\s*[~]*)/", "~", $detail );
-                                    $detail  = preg_replace( "/~$/", "", $detail );
-                                    $dataArr = explode( '~', $detail );
+                                    $detail  = preg_replace( "/([~]*\s*[~]\s*[~]*)/", "~", $detail );//convert multiple ~ to single ~
+                                    $detail  = preg_replace( "/~$/", "", $detail );//remove the last ~
+                                    $dataArr = explode( '~', $detail );//explode 
                                     if ( !is_numeric( $dataArr[ 6 ] ) ) { //to avoid the concession codein caseof concession
                                         array_splice( $dataArr, 5, 1 ); //remove concession code
                                     } //!is_numeric( $dataArr[ 6 ] )
@@ -1273,8 +1278,8 @@ function extract_data( $detailArr ) //extracts required  data from the array 'de
                 }
             } //isset( $flags[ 'fare' ] )
             else if ( isset( $flags[ 'seat' ] ) ) { //extracting seat availability data
-                $detail = strip_tags( $detail );
-                $detail = preg_replace( "/([\n\r\t]+)|&nbsp;/", "~", $detail );
+                $detail = strip_tags( $detail );//remove tags
+                $detail = preg_replace( "/([\n\r\t]+)|&nbsp;/", "~", $detail );//replace all whitespace characters with ~
                 if ( !( $pos1 = strpos( $detail, 'Facility Not Avbl due to Network Connectivity Failure' ) ) ) {
                     if ( !( $pos1 = strpos( $detail, 'Following ERROR was encountered in your Query Processing' ) ) ) {
                         $pos1                     = strpos( $detail, ' ~Train Number~Train Name~Date (DD-MM-YYYY)~Source Station~Destination Station~Quota Code~' );
@@ -1284,9 +1289,9 @@ function extract_data( $detailArr ) //extracts required  data from the array 'de
                              '~Train Number~Train Name~Date (DD-MM-YYYY)~Source Station~Destination Station~Quota Code~',
                             'S.No.~Date (DD-MM-YYYY)' 
                         ), '', $detail );
-                        $detail                   = preg_replace( "/([~]*\s*[~]\s*[~]*)/", "~", $detail );
+                        $detail                   = preg_replace( "/([~]*\s*[~]\s*[~]*)/", "~", $detail );//convert multiple ~ to single ~
                         $detail                   = preg_replace( "/[~]+$/", "", $detail );
-                        $detail                   = explode( '~', $detail );
+                        $detail                   = explode( '~', $detail );//explode
                         $dataArr[ 'classes' ]     = array( );
                         $len                      = sizeof( $detail );
                         $dataArr[ 'trainNo' ]     = $detail[ 0 ];
