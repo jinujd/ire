@@ -74,7 +74,7 @@ Other fields are optional.Put a space between each fields";
             exit;
             
         } else if ( $op == 'about' ) { //about
-            $str = "All data are fetched from various Indian railway websites<br />This app is developed as a social service.Commercial use of this app is not allowed<br />For further information contact:helpline.ire@gmail.com";
+            $str = "All data are fetched from various Indian railway websites<br />This app is developed as a social service.Commercial use of this app is not allowed<br />This app is an an opensource app and the source code can be found at https://github.com/jinujd/ire<br />For further information contact:helpline.ire@gmail.com";
             echo $str;
             exit;
         } else if ( strpos( $op, 'shortcut:' ) === 0 ) { //show shortcuts
