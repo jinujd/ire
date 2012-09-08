@@ -2,6 +2,7 @@
     /*updates all necessary details like ,station names,codes etc.*/
 	
 	set_time_limit(3000);
+	/*This script will take about 2-3 minutes to finish*/
 	require_once('stationNames.php');
 	/*names and codes available at erail.in are stored in the file stationNames.php*/
 	function stripper($elm) {//strips whitespace from the input <elm>
