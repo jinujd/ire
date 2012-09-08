@@ -406,6 +406,7 @@ class smsApp //application
         $params = self::$params;
         $flags  = self::$flags;
         $str    = ''; //result
+		$extraInfo ='';//extra information
         if ( isset( $flags[ 'travel_details' ] ) ) { //gets details related with ,travel from one place to another
             $sourceIndex    = self::$sourceMap[ 'travel_details' ];
             $i              = 0;
@@ -439,6 +440,7 @@ class smsApp //application
             } //isset( $params[ 'date' ] )
             else {//by default todays trains will be returned ,if no date is given
                 $str = $str . " on today";
+				$extraInfo ='<br />'.txtweb_lnk("tomorrow's train", 'http://' . self::$appUrl . 'preprocessor.php?txtweb-message=' . urlencode($stationDetails[ 0 ] . " " . $stationDetails[ 1 ] . " tomorrow" ), 0 );//show link for tomorrow's train 
             }
             if ( isset( $params[ 'time1' ] ) && isset( $params[ 'time2' ] ) ) {//trains at a specified  time interval
                 $time1 = $params[ 'time1' ];
@@ -478,6 +480,7 @@ class smsApp //application
                             
                             $i++;
                         } //$i < $len
+						$str = $str.$extraInfo;
                     } //!isset( $params[ 'all_details' ] )
                     else {
                         $train    = $ret[ $params[ 'all_details' ] ];//all details is the index of the train in the return list of normal request,details for that train will be shown
