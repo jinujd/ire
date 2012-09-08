@@ -440,7 +440,7 @@ class smsApp //application
             } //isset( $params[ 'date' ] )
             else {//by default todays trains will be returned ,if no date is given
                 $str = $str . " on today";
-				$extraInfo ='<br />'.txtweb_lnk("tomorrow's train", 'http://' . self::$appUrl . 'preprocessor.php?txtweb-message=' . urlencode($stationDetails[ 0 ] . " " . $stationDetails[ 1 ] . " tomorrow" ), 0 );//show link for tomorrow's train 
+				$extraInfo =txtweb_lnk("tomorrow's train", 'http://' . self::$appUrl . 'preprocessor.php?txtweb-message=' . urlencode($stationDetails[ 0 ] . " " . $stationDetails[ 1 ] . " tomorrow" ), 0 );//show link for tomorrow's train 
             }
             if ( isset( $params[ 'time1' ] ) && isset( $params[ 'time2' ] ) ) {//trains at a specified  time interval
                 $time1 = $params[ 'time1' ];
