@@ -18,16 +18,16 @@ Files included
 6)stationNames.php	
     Stores the list of station codes as an array(<station code> => <station name>,<station code> => <station name>,...)	
 7)updater.php
-	Updates all station information,referring to files stationCodes.php,stationNames.php	and the website http://www.trainenquiry.com
+    Updates all station information,referring to files stationCodes.php,stationNames.php,and the website http://www.trainenquiry.com
     This ensure that local names of some stations are included.Some names that are not there in the website will be fetched from the two files and vice versa.Thus we get 
      almost a complete list of stations
      After running this file , a directory named stations will be created.In that directory there will be directories like stationsa,stationsb...Each of these directories store details of stations starting with the ending alphabet of the directory name	 
-	 Inside each of these directories,there will be two files.
-	 i)stFromName.php
+     Inside each of these directories,there will be two files.
+     i)stFromName.php
 	     This file stores the information about stations whose name starts with the ending alphabet of directory name ,as an array 
-		 array(<station name> => array(<station code>,<division>,<zone>) ,....)
-	ii)stFromCode.php
+	     array(<station name> => array(<station code>,<division>,<zone>) ,....)
+     ii)stFromCode.php
 	     This file stores the information about stations whose station  code starts with the ending alphabet of directory name ,as an array 
-		 array(<station code> => array(<station name>,<division>,<zone>) ,....)
-		 Thus searching will be limited to any one of this directories and files instead of the entire list of stations,which enhances the speed of the application
+             array(<station code> => array(<station name>,<division>,<zone>) ,....)
+             Thus searching will be limited to any one of this directories and files instead of the entire list of stations,which enhances the speed of the application
 	
