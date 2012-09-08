@@ -2,8 +2,8 @@
     /*updates all necessary details like ,station names,codes etc.*/
 	
 	set_time_limit(3000);
-	/*name sand codesavailable at erail.in*/
 	require_once('stationNames.php');
+	/*names and codes available at erail.in are stored in the file stationNames.php*/
 	function stripper($elm) {//strips whitespace from the input <elm>
         return trim($elm);
     }
@@ -20,7 +20,7 @@
 		 "NLO" => "Not Known Yet" ,
 		 "OMLF" => "Old Malda" ,
 		 "SXS" => "Shobhasan"
-	) ;//stations whose name is missing in the source site
+	) ;//stations whose name is missing in the source site(s)
 	$alpha = range('a','z');//alphabet list
 	$i = 0;
 	$len = 26;
