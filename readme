@@ -1,6 +1,6 @@
 This is the source code for the sms app named @ire published on txtweb platform.
 Run updater.php before first running of the app.It creates all necessary files
-Files included
+Files included in this project
 1)index.php
      This file is used to show the home page,main menu and associated links for the text site
 2)preprocessor.php
