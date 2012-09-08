@@ -162,7 +162,7 @@ class Train
         $ret = $depDate->format( 'd-m-Y' );
         return $ret;
     }
-    public function getStations( ) //returns array(startStationCode,startStationCode)
+    public function getStations( ) //returns array(<journey statting station's code>,<journey ending station's code>)
     {
         return array(
              $this->startStCode,
@@ -328,7 +328,7 @@ class smsApp //application
             } //$mapping as $dummyParam => $actualParam
         } //isset( self::$params )
     }
-    public static function destroy( $code ) //exits the application and shows an erro message according to the code passed
+    public static function destroy( $code ) //exits the application and shows an error message according to the code passed
     {
         echo ( self::$errCodes[ $code ] );
         exit( 0 );
@@ -340,11 +340,11 @@ class smsApp //application
         self::getInfoFromSource( self::$sourceMap[ 'station_details' ] );
         $data = self::$data;
         if ( sizeof( $data ) > 2 ) { // self::data = array(stationName1=>stationCode1,stationName2=>stationCode2...)
-            smsApp::handleTypo( $stationHint, $data );
+            smsApp::handleTypo( $stationHint, $data );//exact station name not found ,shows list of suggestions
         } //sizeof( $data ) > 2
         self::unsetFlag( 'station_details' );
         self::unsetParam( 'station_details' );
-        return $data[ 1 ];
+        return $data[ 1 ];//station code corresponding to the station name
     }
     public static function isValidClass( $class ) //returns true if entered railway class code is valid ,otherwise returns false
     {
@@ -421,13 +421,13 @@ class smsApp //application
             self::getInfoFromSource( $sourceIndex ); //get information
             $data = self::$data;
             $d    = new DateTime;
-            $str  = $str . $data[ 0 ][ 1 ] . " -  " . $data[ 1 ][ 1 ];
+            $str  = $str . $data[ 0 ][ 1 ] . " -  " . $data[ 1 ][ 1 ];//source station name - destination station name
             $time = $date = false;
             if ( isset( $params[ 'date' ] ) ) {
                 $date    = $params[ 'date' ];
                 $curDate = new DateTime();
                 $d       = new DateTime( $date );
-                if ( $curDate->diff( $d )->format( "%a" ) > 120 ) {
+                if ( $curDate->diff( $d )->format( "%a" ) > 120 ) {//details of trains before or after 120 days from current day cannot be fetched
                     echo ( "<br />Oops..The date " . $date . " is too far" );
                     return false;
                 } //$curDate->diff( $d )->format( "%a" ) > 120
@@ -437,10 +437,10 @@ class smsApp //application
                 );
                 $str  = !isset( $params[ 'all_details' ] ) ? $str . " on " . $date : $str . '';
             } //isset( $params[ 'date' ] )
-            else {
+            else {//by default todays trains will be returned ,if no date is given
                 $str = $str . " on today";
             }
-            if ( isset( $params[ 'time1' ] ) && isset( $params[ 'time2' ] ) ) {
+            if ( isset( $params[ 'time1' ] ) && isset( $params[ 'time2' ] ) ) {//trains at a specified  time interval
                 $time1 = $params[ 'time1' ];
                 $time2 = $params[ 'time2' ];
                 $time  = array(
@@ -454,7 +454,7 @@ class smsApp //application
             $ret = array( );
             if ( $len > 0 ) {
                 while ( $i < $len ) {
-                    if ( $data[ $i ]->isAvailableOn( $date, $time ) ) {
+                    if ( $data[ $i ]->isAvailableOn( $date, $time ) ) {//filters out the trains which are not available on the specified date and time ,from the entire list
                         array_push( $ret, $data[ $i ] );
                         $data[ $i ]->setDepDate( $date );
                     } //$data[ $i ]->isAvailableOn( $date, $time )
@@ -464,8 +464,12 @@ class smsApp //application
                 $len = sizeof( $ret );
                 $str = $str . "<br />";
                 if ( $len > 0 ) {
-                    usort( $ret, "time_sort" );
+                    usort( $ret, "time_sort" );//sort trains based on arrival time on source station
                     if ( !isset( $params[ 'all_details' ] ) ) {
+					/*
+					if all details is set, then details of the specific train will be returned,
+					all details should be set to the index of the train in the return list of normal request
+					*/
                         $str = $str . "Reply letter/number given in ( ) for details<br />";
                         while ( $i < $len ) {
                             $time = $ret[ $i ]->getTime();
@@ -476,10 +480,10 @@ class smsApp //application
                         } //$i < $len
                     } //!isset( $params[ 'all_details' ] )
                     else {
-                        $train    = $ret[ $params[ 'all_details' ] ];
-                        $time     = $train->getTime();
-                        $stations = $train->getStations();
-                        $trNo     = $train->getNo();
+                        $train    = $ret[ $params[ 'all_details' ] ];//all details is the index of the train in the return list of normal request,details for that train will be shown
+                        $time     = $train->getTime();//train time
+                        $stations = $train->getStations();//array(<journey statting station's code>,<journey ending station's code>)
+                        $trNo     = $train->getNo();//get train number
                         $str      = $str . $train->getName() . " ( No: " . $trNo . " ) at " . $time[ 0 ] . "<br />Arrives  destination at " . $time[ 1 ] . " on " . $train->getArrDate() . "
 							<br />Distance:" . $train->getDistance() . "kms , classes available - " . implode( ",", $train->getClasses() ) . " Fare type - " . $train->getFareType() . "<br />This train is from " . $stations[ 0 ] . "
 							to " . $stations[ 1 ] . "<br />Reply the letter or number in ( ) for following options<br />" . txtweb_lnk( 'running status of this train at ' . $data[ 0 ][ 1 ], 'http://' . self::$appUrl . 'preprocessor.php?txtweb-message=status:' . urlencode( $trNo . " " . str_replace( self::getParam( 'to' ), '', $_GET[ 'txtweb-message' ] ) ), 0, 1 );
@@ -489,7 +493,7 @@ class smsApp //application
                         
                     }
                 } //$len > 0
-                else {
+                else {//no trains found
                     $str = $str . "<br />No direct trains found.You may use an intermediate station";
                 }
             } //$len > 0
@@ -1335,7 +1339,9 @@ function extract_data( $detailArr ) //extracts required  data from the array 'de
                         $pos2         = strpos( $detail, '~Please Try Again~' );
                         $detail       = explode( '~', $detail );
                         $detail       = $detail[ 1 ];
-                        $dataArr[ 0 ] = $detail;
+                            $dataArr = array(
+                                 ( !strpos( $detail, 'Invalid Train Number' ) ) ? $detail: 'Seat availability enquiry not available for this train' 
+                            );
                     }
                     
                 } //!( $pos1 = strpos( $detail, 'Facility Not Avbl due to Network Connectivity Failure' ) )
