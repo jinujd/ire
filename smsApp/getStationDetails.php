@@ -2,7 +2,7 @@
 /*
 return format:
 ^<stationName1>~<stationCode1>~<divisionName1>~<zonName1>^<stationName2>~<stationCode2>~<divisionName2>~<zonName2>..
-It first checks whether the argument is a valid station code,otherwise checks in station names and returns a maximum of  5 similar station names
+It first checks whether the argument is a valid station code,otherwise checks in station names and returns a maximum of  5 similar station by default names
 */
 function stripper( $elm )
 {
