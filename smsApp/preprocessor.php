@@ -23,10 +23,14 @@ smsApp::init( array(
 ), 'Asia/Kolkata' );
 $_GET[ 'txtweb-message' ] = str_replace( array(
      '"',
-    "'" 
-), '', strtolower( $_GET[ 'txtweb-message' ] ) ); //filter the message
+    "'" ,
+    '<' ,
+    '>' ,
+    '['	,
+	']'
+), '', strtolower( $_GET[ 'txtweb-message' ] ) ); //filter the message to avoid sql injection and accidental insertion of < ,> and [ ,] which are used to indicate parameters in help
 $tMsg                     = $_GET[ 'txtweb-message' ];
-$params1                  = explode( ' ', $tMsg ); //seperate the parameters sent
+$params1                  = explode( ' ', $tMsg ); //seperate the parameters sent,space is used as separator
 $i                        = 0;
 $seatSet                  = false; //indicates whether option seat availability is choosed
 $fareSet                  = false; //ndicates whether option fare is choosed
@@ -40,87 +44,105 @@ $fareClassSet             = false;
 $hiddSet                  = array( );
 while ( $i < $len ) {
     $val = $params1[ $i ];
-    if ( strpos( $val, '$' ) !== false ) {
+    if ( strpos( $val, '$' ) !== false ) {//station details are requested
         $val                         = str_replace( '$', '', $val );
         $params[ 'station_details' ] = $val;
         $flags[ 'station_details' ]  = 1;
-    } else if ( strpos( $val, 'station:' ) !== false ) {
+    } //strpos( $val, '$' ) !== false
+    else if ( strpos( $val, 'station:' ) !== false ) {//station details are requested
         $val                         = str_replace( 'station:', '', $val );
         $params[ 'station_details' ] = $val;
         $flags[ 'station_details' ]  = 1;
-    } else if ( strpos( $val, 'seat:' ) !== false ) {
+    } //strpos( $val, 'station:' ) !== false
+    else if ( strpos( $val, 'seat:' ) !== false ) {//seat availability request
         $val                    = str_replace( 'seat:', '', $val );
         $flags[ 'seat' ]        = 1;
         $seatSet                = true;
         $params[ 'fare_tr_no' ] = $val;
-    } else if ( strpos( $val, 'fare:' ) !== false ) {
+    } //strpos( $val, 'seat:' ) !== false
+    else if ( strpos( $val, 'fare:' ) !== false ) {//fare enquiry
         $val                    = str_replace( 'fare:', '', $val );
         $flags[ 'fare' ]        = 1;
         $fareSet                = true;
         $params[ 'fare_tr_no' ] = $val;
-    } else if ( strpos( $val, 'pnr:' ) !== false ) {
+    } //strpos( $val, 'fare:' ) !== false
+    else if ( strpos( $val, 'pnr:' ) !== false ) {//pnr status
         $val                = str_replace( 'pnr:', '', $val );
         $params[ 'pnr_no' ] = $val;
         $flags[ 'pnr' ]     = 1;
-    } else if ( strpos( $val, 'status:' ) !== false ) {
+    } //strpos( $val, 'pnr:' ) !== false
+    else if ( strpos( $val, 'status:' ) !== false ) {//train running status
         $val                      = str_replace( 'status:', '', $val );
         $flags[ 'status' ]        = 1;
         $params[ 'status_tr_no' ] = $val;
-    } else if ( strpos( $val, 'legend:' ) !== false ) {
+    } //strpos( $val, 'status:' ) !== false
+    else if ( strpos( $val, 'legend:' ) !== false ) {//legends
+	   /*to get legend user will send query as legend:<legend name> ,ex:legend:pnr*/
         $flags[ 'legend' ] = 1;
         $leg_ops           = array(
              'pnr' => 0,
             'seat' => 1,
             'quota' => 1,
             'class' => 2 
-        );
+        );//this array is used to identify the legend option set
         $val               = str_replace( 'legend:', '', $val );
         if ( isset( $leg_ops[ $val ] ) ) {
             $flags[ 'leg_op' ] = $leg_ops[ $val ];
-        } else {
+        } //isset( $leg_ops[ $val ] )
+        else {
             echo "Invalid option";
             exit( 0 );
         }
-    } else if ( strpos( $val, '.' ) !== false || strpos( $val, ':' ) !== false ) { //time
+    } //strpos( $val, 'legend:' ) !== false
+    else if ( strpos( $val, '.' ) !== false || strpos( $val, ':' ) !== false ) { //time, can be hh:mm,or hh.mm
         $val = str_replace( '.', ':', $val );
         array_push( $time, $val );
-    } else if ( strpos( $val, '-' ) !== false || strpos( $val, '/' ) !== false ) {
+    } //strpos( $val, '.' ) !== false || strpos( $val, ':' ) !== false
+    else if ( strpos( $val, '-' ) !== false || strpos( $val, '/' ) !== false ) {//date,can be dd/mm/yyyy or dd-mm-yyyy
         $val              = str_replace( '/', '-', $val );
         $params[ 'date' ] = $val;
-    } else if ( strpos( $val, '?' ) !== false ) {
+    } //strpos( $val, '-' ) !== false || strpos( $val, '/' ) !== false
+    else if ( strpos( $val, '?' ) !== false ) {//detailed info is needed
         $params[ 'all_details' ] = str_replace( '?', '', $val );
-    } else if ( $val != '' ) {
-	    if($val =='tomorrow') {
-		    $dt = new DateTime();
-			$dt = ( $dt->format('d')+1).'-'.$dt->format('m-Y');
-			$params['date'] = $dt;
-		}else
-        if ( isset( $flags[ 'station_details' ] ) ) {
+    } //strpos( $val, '?' ) !== false
+    else if ( $val != '' ) {
+        if ( $val == 'tomorrow' ) {//date =  tomorrow's date
+            $dt               = new DateTime();
+            $dt               = ( $dt->format( 'd' ) + 1 ) . '-' . $dt->format( 'm-Y' );
+            $params[ 'date' ] = $dt;
+        } //$val == 'tomorrow'
+        else if ( isset( $flags[ 'station_details' ] ) ) {
             $params[ 'limit' ] = $val;
-        } else if ( isset( $params[ 'to' ] ) ) {
-            if ( !isset( $params[ 'fare_class' ] ) ) {
+        } //isset( $flags[ 'station_details' ] )
+        else if ( isset( $params[ 'to' ] ) ) {//destination station is already set =>val  info other than source station and destination station
+            if ( !isset( $params[ 'fare_class' ] ) ) {//class option for fare enquiry
                 $params[ 'fare_class' ] = $val;
                 $fareClassSet           = true;
-            } else {
-                if ( !isset( $params[ 'fare_age' ] ) ) {
+            } //!isset( $params[ 'fare_class' ] )
+            else {
+                if ( !isset( $params[ 'fare_age' ] ) ) {//age option for fare enquiry
                     $params[ 'fare_age' ] = $val;
                     $fareAgeSet           = true;
-                } else {
-                    $params[ 'fare_conc' ] = $val;
+                } //!isset( $params[ 'fare_age' ] )
+                else {
+                    $params[ 'fare_conc' ] = $val;//concession for fare enquiry
                 }
             }
-        } else if ( isset( $params[ 'from' ] ) ) {
+        } //isset( $params[ 'to' ] )
+        else if ( isset( $params[ 'from' ] ) ) {//source station set => val is destination station
             $params[ 'to' ] = $val;
-        } else {
-            if ( !isset( $params[ 'status_tr_no' ] ) ) {
+        } //isset( $params[ 'from' ] )
+        else {
+            if ( !isset( $params[ 'status_tr_no' ] ) ) {//train number for running status enquiry not set =>set destination station as val
                 $params[ 'from' ] = $val;
-            } else {
-                $params[ 'status_station' ] = $val;
+            } //!isset( $params[ 'status_tr_no' ] )
+            else {
+                $params[ 'status_station' ] = $val;//station for running status enquiry 
             }
         }
-    }
+    } //$val != ''
     $i++;
-}
+} //$i < $len
 if ( isset( $params[ 'from' ] ) ) {
     if ( isset( $params[ 'to' ] ) ) {
         if ( $seatSet || $fareSet ) {
@@ -133,6 +155,12 @@ if ( isset( $params[ 'from' ] ) ) {
             unset( $params[ 'to' ] );
             unset( $params[ 'date' ] );
             if ( $fareSet ) {
+			/*
+			hiddSet is an array used to set all hidden parameters(both dummy parameters and actual parameters)
+			hiddSet = array(<dummyParameterNamePrefix>,<actualParameterNamePrefix>,<range>,<difference of dummyparameterSuffixNumber from actualParametersuffixNumber>)
+			<range> is an array storing range of suffix numbers for actual parameters as(<start>,<stop>)
+			name of actual parameters will end in numbers from <start> to <stop>
+			*/
                 array_push( $hiddSet, array(
                      'dummyPrefix' => 'fare_hidden',
                     'actPrefix' => 'lccp_frclass',
@@ -148,7 +176,8 @@ if ( isset( $params[ 'from' ] ) ) {
                 $params[ 'fare_hidden10' ] = 1;
                 $i                         = 3;
                 $till                      = 10;
-            } else {
+            } //$fareSet
+            else {
                 $opName = 'seat';
                 array_push( $hiddSet, array(
                      'dummyPrefix' => 'seat_hidden',
@@ -164,40 +193,42 @@ if ( isset( $params[ 'from' ] ) ) {
                 if ( $fareClassSet ) {
                     $tmp                    = $params[ 'fare_class' ];
                     $params[ 'seat_class' ] = $tmp;
-                }
+                } //$fareClassSet
                 if ( $fareAgeSet ) {
                     $tmp = $params[ 'fare_age' ];
                     unset( $params[ 'fare_age' ] );
                     $params[ 'seat_quota' ] = $tmp;
-                }
+                } //$fareAgeSet
                 $params[ 'fare_hidden1' ] = 'ZZ';
                 $params[ 'fare_class' ]   = 'ZZ';
             }
-            while ( $i < $till ) {
+            while ( $i < $till ) {//sets hidden fields
                 $params[ $opName . '_hidden' . $i++ ] = 'ZZ';
-            }
-        } else {
+            } //$i < $till
+        } //$seatSet || $fareSet
+        else {
             $flags[ "travel_details" ] = 1;
         }
-    } else {
+    } //isset( $params[ 'to' ] )
+    else {//destination station not given
         echo ( "Destination station not sent.Try again with the destination station" );
         exit( 0 );
     }
-}
-if ( isset( $params[ 'status_tr_no' ] ) ) {
+} //isset( $params[ 'from' ] )
+if ( isset( $params[ 'status_tr_no' ] ) ) {//status or fare enquiry
     $params[ 'status_date' ] = isset( $params[ 'date' ] ) ? new DateTime( $params[ 'date' ] ) : new DateTime();
     $params[ 'status_date' ] = $params[ 'status_date' ]->format( 'd/m/Y' );
-}
-if ( sizeof( $time ) > 0 ) {
+} //isset( $params[ 'status_tr_no' ] )
+if ( sizeof( $time ) > 0 ) {//time is set
     $i = 0;
-    array_push( $time, "24:00:00" );
+    array_push( $time, "24:00:00" );//if time2 is not set ,it will be set as 24:00:00,time interval will be (time[0],time[1])
     while ( $i < 2 ) {
         if ( isset( $time[ $i ] ) ) {
             $params[ 'time' . ( $i + 1 ) ] = $time[ $i ];
-        }
+        } //isset( $time[ $i ] )
         ++$i;
-    }
-}
+    } //$i < 2
+} //sizeof( $time ) > 0
 smsApp::setSources( array( //sets the sources for each functionality , = array(<function name> => <source index in initiation array passed to smsApp::init>)
      'travel_details' => 0,
     'train_details' => 0,
@@ -246,9 +277,9 @@ while ( $i1 < $lenM ) {
         $dSufNum                     = $start + $oH;
         $mapping[ $dPre . $dSufNum ] = $aPre . $start;
         $start++;
-    }
+    } //$start <= $stop
     
-}
+} //$i1 < $lenM
 smsApp::setParams( $params ); //sets parameters
 smsApp::mapParams( $mapping ); //map parametersto actual parameters
 smsApp::setFlags( $flags ); //set engine flags
@@ -271,7 +302,8 @@ function txtweb_lnk( $value, $url, $show = 1, $normal = 0 ) //shows a txtweb-lin
     $ret    = '<a href="' . $url . '" ' . $normal . ' >' . $value . '</a><br />';
     if ( $show == 1 ) {
         echo ( $ret );
-    } else {
+    } //$show == 1
+    else {
         return $ret;
     }
 }
