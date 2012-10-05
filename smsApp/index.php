@@ -11,7 +11,6 @@
     <body>
     <?php
 /*Index page which shows the main menu and associated links*/
-/*Not gave much attention to this page.So code may not be optimised*/
 $appUrl = $_SERVER[ 'HTTP_HOST' ] . '/ire/smsApp/'; //app url
 $lnk    = "http://" . $appUrl;
 $tMsg   = isset( $_GET[ 'txtweb-message' ] ) ? $_GET[ 'txtweb-message' ] : '';
