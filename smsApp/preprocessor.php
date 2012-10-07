@@ -33,7 +33,7 @@ $tMsg                     = $_GET[ 'txtweb-message' ];
 $params1                  = explode( ' ', $tMsg ); //seperate the parameters sent,space is used as separator
 $i                        = 0;
 $seatSet                  = false; //indicates whether option seat availability is choosed
-$fareSet                  = false; //ndicates whether option fare is choosed
+$fareSet                  = false; //indicates whether option fare is choosed
 $fareAgeSet               = false;
 $len                      = sizeof( $params1 );
 $time                     = array( );
@@ -242,7 +242,7 @@ $mapping = array(
     /*maps app defined parameters to actual parameters that are to be sent to sources in HTTP GET OR POST
     Helps to recognise which parameters are sent actually .Change of source website requires change of actual parameters only
     */
-     "from" => "Station_From",
+    "from" => "Station_From",
     "to" => "Station_To",
     "no" => "TrainNo",
     "pnr_no" => "lccp_pnrno1",
