@@ -6,7 +6,7 @@
     <script>
 </script>
         
-       <meta name = "txtweb-appkey" content = "e2e4dd4e-4899-4065-a9a8-9c5b0b8ca08e" />
+       <meta name = "txtweb-appkey" content = "your service app key here" />
     </head>
     <body>
     <?php
