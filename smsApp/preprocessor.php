@@ -289,7 +289,7 @@ function txtweb_reply( $msg ) //replies a message to a number
     $mob_hash = $_GET[ 'txtweb-mobile' ];
     $pub_key  = 'cacccf20-01c6-4f2c-a50d-c44b6dfca6db';
     $msg      = '<html><head><title>railschedule</title>
-		<meta name = "txtweb-appkey" content = "cd30ea49-7e0c-48a5-9662-55881501c228" /></head><body>' . $msg . '</body></html>';
+		<meta name = "txtweb-appkey" content = "your publisher key here" /></head><body>' . $msg . '</body></html>';
     send_post( 'http://api.txtweb.com/v1/push', array(
          'txtweb-mobile' => $mob_hash,
         'txtweb-pubkey' => $pub_key,
