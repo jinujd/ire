@@ -411,10 +411,12 @@ class smsApp //application
             $sourceIndex    = self::$sourceMap[ 'travel_details' ];
             $i              = 0;
             $stationDetails = array( );
+			$stationNames = array();
             foreach ( $params as $key => &$val ) {
                 if ( $key == self::$paramsMap[ 'from' ] || $key == self::$paramsMap[ 'to' ] ) {
                     $data = self::getStation( $val );
-                    array_push( $stationDetails, $data[ 1 ] );
+                    array_push( $stationDetails, strtoupper($data[ 1 ]) );
+                    array_push( $stationNames, $data[ 0 ] );
                 } //$key == self::$paramsMap[ 'from' ] || $key == self::$paramsMap[ 'to' ]
             } //$params as $key => &$val
             self::setParam( 'from', $stationDetails[ 0 ] ); //set the source staion code
@@ -422,7 +424,7 @@ class smsApp //application
             self::getInfoFromSource( $sourceIndex ); //get information
             $data = self::$data;
             $d    = new DateTime;
-            $str  = $str . $data[ 0 ][ 1 ] . " -  " . $data[ 1 ][ 1 ];//source station name - destination station name
+            $str  = $str . $stationNames[0] . " -  " . $stationNames[1];//source station name - destination station name
             $time = $date = false;
             if ( isset( $params[ 'date' ] ) ) {
                 $date    = $params[ 'date' ];
@@ -472,7 +474,7 @@ class smsApp //application
 					if all details is set, then details of the specific train will be returned,
 					all details should be set to the index of the train in the return list of normal request
 					*/
-                        $str = $str . "Reply letter/number given in ( ) for details<br />";
+                        $str = $str . "Reply letter  given in ( ) for details<br />";
                         while ( $i < $len ) {
                             $time = $ret[ $i ]->getTime();
                             $str1 = $ret[ $i ]->getName() . " at " . $time[ 0 ];
@@ -489,7 +491,7 @@ class smsApp //application
                         $trNo     = $train->getNo();//get train number
                         $str      = $str . $train->getName() . " ( No: " . $trNo . " ) at " . $time[ 0 ] . "<br />Arrives  destination at " . $time[ 1 ] . " on " . $train->getArrDate() . "
 							<br />Distance:" . $train->getDistance() . "kms , classes available - " . implode( ",", $train->getClasses() ) . " Fare type - " . $train->getFareType() . "<br />This train is from " . $stations[ 0 ] . "
-							to " . $stations[ 1 ] . "<br />Reply the letter or number in ( ) for following options<br />" . txtweb_lnk( 'running status of this train at ' . $data[ 0 ][ 1 ], 'http://' . self::$appUrl . 'preprocessor.php?txtweb-message=status:' . urlencode( $trNo . " " . str_replace( self::getParam( 'to' ), '', $_GET[ 'txtweb-message' ] ) ), 0, 1 );
+							to " . $stations[ 1 ] . "<br />Reply the letter in ( ) for following options<br />" . txtweb_lnk( 'running status of this train at ' . $data[ 0 ][ 1 ], 'http://' . self::$appUrl . 'preprocessor.php?txtweb-message=status:' . urlencode( $trNo . " " . str_replace( self::getParam( 'to' ), '', $_GET[ 'txtweb-message' ] ) ), 0, 1 );
                         $str      = $str . txtweb_lnk( 'running status of this train at ' . $data[ 1 ][ 1 ], 'http://' . self::$appUrl . 'preprocessor.php?txtweb-message=status:' . urlencode( $trNo . " " . str_replace( self::getParam( 'from' ), '', $_GET[ 'txtweb-message' ] ) ), 0, 1 );
                         $str      = $str . txtweb_lnk( 'fare', 'http://' . self::$appUrl . 'preprocessor.php?txtweb-message=fare:' . urlencode( $trNo . " " . $stationDetails[ 0 ] . " " . $stationDetails[ 1 ] . " " . $date ), 0, 1 );
                         $str      = $str . txtweb_lnk( 'seat availability in this train', 'http://' . self::$appUrl . 'preprocessor.php?txtweb-message=seat:' . urlencode( $trNo . " " . $stationDetails[ 0 ] . " " . $stationDetails[ 1 ] . " " . $date ), 0, 1 );
@@ -511,7 +513,7 @@ class smsApp //application
             $i    = 1;
             $len  = sizeof( $data );
             if ( $len > 2 ) {
-                $str = !isset( $params[ 'all_details' ] ) ? "Stations similar to " . self::$params[ 'station_details' ] . "<br />Reply the letter/number  given in ( ) for details<br />" : "Station Details";
+                $str = !isset( $params[ 'all_details' ] ) ? "Stations similar to " . self::$params[ 'station_details' ] . "<br />Reply the letter   given in ( ) for details<br />" : "Station Details";
             } //$len > 2
             else {
                 $str                     = "Details for station " . self::$params[ 'station_details' ];
@@ -1051,7 +1053,7 @@ class smsApp //application
             else if ( $type == 2 ) {
                 $ret = "quota";
             } //$type == 2
-            $ret = 'Invalid ' . $ret . ' code.Reply with the letter/number given in ( ) corresponding to the ' . $ret . '<br />';
+            $ret = 'Invalid ' . $ret . ' code.Reply with the letter  given in ( ) corresponding to the ' . $ret . '<br />';
             foreach ( $solutions as $suggestion => &$code ) {
                 $ret = $ret . txtweb_lnk( $suggestion . "( code: " . $code . ")", 'http://' . self::$appUrl . 'preprocessor.php?txtweb-message=' . urlencode( str_replace( $error, $code, $_GET[ 'txtweb-message' ] ) ), 0, 1 );
             } //$solutions as $suggestion => &$code
